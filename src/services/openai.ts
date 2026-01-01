@@ -6,6 +6,28 @@ const client = new OpenAI({
   dangerouslyAllowBrowser: true
 });
 
+export async function transcribeAudio(audioBlob: Blob): Promise<string | null> {
+  try {
+    // Convert blob to File object for OpenAI API
+    const audioFile = new File([audioBlob], 'dream-recording.webm', {
+      type: 'audio/webm'
+    });
+
+    const response = await client.audio.transcriptions.create({
+      file: audioFile,
+      model: 'whisper-1',
+      language: 'en',
+      response_format: 'text',
+      temperature: 0.2
+    });
+
+    return response;
+  } catch (error) {
+    console.error('Error transcribing audio with Whisper:', error);
+    return null;
+  }
+}
+
 export async function getSymbolMeanings(symbols: string[]): Promise<SymbolMeaning[]> {
   if (symbols.length === 0) return [];
   
@@ -35,50 +57,35 @@ export async function getSymbolMeanings(symbols: string[]): Promise<SymbolMeanin
   }
 }
 
-export async function chatWithTherapist(
-  userMessage: string, 
+export async function chatAboutDream(
+  userQuestion: string, 
   dreamContext: string, 
-  analysis: DreamAnalysis,
-  conversationHistory: Array<{role: 'user' | 'assistant', content: string}>
+  analysis: DreamAnalysis
 ): Promise<string | null> {
-  const systemPrompt = `You are a compassionate and insightful dream therapist. You have analyzed a client's dream and are now having a therapeutic conversation with them.
+  const prompt = `You are a dream analysis assistant. The user had this dream: "${dreamContext}"
 
-DREAM CONTEXT:
-"${dreamContext}"
-
-ANALYSIS REFERENCE:
+Your analysis found:
 - Interpretation: ${analysis.interpretation}
 - Dominant Emotion: ${analysis.dominantEmotion}
-- Key Symbols: ${analysis.recurringSymbols.join(', ')}
+- Recurring Symbols: ${analysis.recurringSymbols.join(', ')}
 
-THERAPEUTIC APPROACH:
-- Be warm, empathetic, and non-judgmental
-- Ask thoughtful follow-up questions to encourage deeper exploration
-- Help the client connect dream symbols to their waking life
-- Provide gentle insights without being prescriptive
-- Keep responses concise but meaningful (2-3 sentences max)
-- Use the dream analysis as reference but focus on the client's current feelings and thoughts
-- Encourage self-discovery rather than giving direct interpretations
+The user is asking: "${userQuestion}"
 
-Remember: You're having an ongoing conversation, so reference previous exchanges naturally.`;
+Provide a helpful, insightful response about their dream. Be conversational, empathetic, and focus on the psychological and symbolic aspects. Keep responses concise but meaningful.`;
 
   try {
-    const messages = [
-      { role: "system" as const, content: systemPrompt },
-      ...conversationHistory.slice(-10), // Keep last 10 exchanges for context
-      { role: "user" as const, content: userMessage }
-    ];
-
     const response = await client.chat.completions.create({
       model: "gpt-4o-mini",
-      messages,
-      max_tokens: 150,
-      temperature: 0.7
+      messages: [
+        {"role": "system", "content": "You are a knowledgeable and empathetic dream analysis assistant."},
+        {"role": "user", "content": prompt}
+      ],
+      max_tokens: 300
     });
 
     return response.choices[0].message.content;
   } catch (error) {
-    console.error('Error in dream therapy chat:', error);
+    console.error('Error in dream chat:', error);
     return null;
   }
 }

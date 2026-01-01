@@ -71,7 +71,7 @@ function App() {
                   onClick={() => setShowChatbot(!showChatbot)}
                   className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-8 py-4 rounded-2xl font-semibold text-lg hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 shadow-lg hover:shadow-xl"
                 >
-                  {showChatbot ? 'Hide Dream Therapy' : 'Start Dream Therapy Session'}
+                  {showChatbot ? 'Hide Dream Chat' : 'Chat About Your Dream'}
                 </button>
               </div>
 
@@ -86,7 +86,7 @@ function App() {
           <div className="text-center mt-16">
             <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl p-8 border border-blue-700/30 max-w-md mx-auto">
               <p className="text-blue-100 text-lg">
-                Share your dream above to discover its hidden meanings and unlock insights from your subconscious mind with NIDRA AI.
+                Share your dream above to discover its hidden meanings and unlock insights from your subconscious mind.
               </p>
             </div>
           </div>
@@ -95,11 +95,8 @@ function App() {
       
       <footer className="bg-slate-800/80 backdrop-blur-sm border-t border-blue-700/30 py-6 mt-16">
         <div className="container mx-auto px-4 text-center">
-          <p className="text-sm text-blue-200 mb-2">
-            Powered by AI • Your dreams, decoded with NIDRA AI
-          </p>
-          <p className="text-xs text-blue-300">
-            Developed by Shalaka Gangurde and Sarthak Mokal
+          <p className="text-sm text-blue-200">
+            Powered by AI • Your dreams, decoded with Nidra AI
           </p>
         </div>
       </footer>

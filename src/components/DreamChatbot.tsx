@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { MessageCircle, Send, Bot, User } from 'lucide-react';
-import { chatWithTherapist } from '../services/openai';
+import { chatAboutDream } from '../services/openai';
 import type { DreamAnalysis } from '../types/dream';
 
 interface Message {
@@ -19,7 +19,7 @@ export default function DreamChatbot({ dreamContext, analysis }: DreamChatbotPro
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
-      text: "Hello, I'm your dream therapy assistant. I've carefully analyzed your dream and I'm here to help you explore its deeper meanings. What aspects of your dream would you like to discuss?",
+      text: "Hello! I'm your dream analysis assistant. I've analyzed your dream and I'm here to answer any questions you might have about it. What would you like to know more about?",
       sender: 'bot',
       timestamp: new Date()
     }
@@ -27,7 +27,6 @@ export default function DreamChatbot({ dreamContext, analysis }: DreamChatbotPro
   const [inputText, setInputText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const conversationHistory = useRef<Array<{role: 'user' | 'assistant', content: string}>>([]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -48,39 +47,25 @@ export default function DreamChatbot({ dreamContext, analysis }: DreamChatbotPro
     };
 
     setMessages(prev => [...prev, userMessage]);
-    
-    // Add to conversation history
-    conversationHistory.current.push({ role: 'user', content: inputText });
-    
     setInputText('');
     setIsLoading(true);
 
     try {
-      const response = await chatWithTherapist(
-        inputText, 
-        dreamContext, 
-        analysis, 
-        conversationHistory.current
-      );
+      const response = await chatAboutDream(inputText, dreamContext, analysis);
       
       const botMessage: Message = {
         id: (Date.now() + 1).toString(),
-        text: response || "I understand this might be difficult to explore. Take your time, and feel free to share what feels comfortable for you.",
+        text: response || "I'm sorry, I couldn't process your question. Please try asking something else about your dream.",
         sender: 'bot',
         timestamp: new Date()
       };
 
       setMessages(prev => [...prev, botMessage]);
-      
-      // Add bot response to conversation history
-      if (response) {
-        conversationHistory.current.push({ role: 'assistant', content: response });
-      }
     } catch (error) {
-      console.error('Error in dream therapy chat:', error);
+      console.error('Error in dream chat:', error);
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
-        text: "I'm here to listen. Sometimes technology has its limits, but your feelings and experiences are always valid. Please try sharing again when you're ready.",
+        text: "I'm experiencing some technical difficulties. Please try your question again.",
         sender: 'bot',
         timestamp: new Date()
       };
@@ -104,8 +89,8 @@ export default function DreamChatbot({ dreamContext, analysis }: DreamChatbotPro
           <MessageCircle className="w-6 h-6 text-white" />
         </div>
         <div>
-          <h3 className="text-2xl font-bold text-blue-100">Dream Therapy Assistant</h3>
-          <p className="text-blue-300">Explore your subconscious with compassionate guidance</p>
+          <h3 className="text-2xl font-bold text-blue-100">Dream Chat Assistant</h3>
+          <p className="text-blue-300">Ask questions about your dream analysis</p>
         </div>
       </div>
 
@@ -152,7 +137,7 @@ export default function DreamChatbot({ dreamContext, analysis }: DreamChatbotPro
             <div className="bg-slate-700/50 text-blue-100 border border-blue-600/30 px-4 py-3 rounded-2xl">
               <div className="flex items-center gap-2">
                 <div className="animate-spin rounded-full h-4 w-4 border-2 border-blue-400 border-t-transparent"></div>
-                <span className="text-sm">Reflecting on your thoughts...</span>
+                <span className="text-sm">Thinking...</span>
               </div>
             </div>
           </div>
@@ -168,7 +153,7 @@ export default function DreamChatbot({ dreamContext, analysis }: DreamChatbotPro
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
             onKeyPress={handleKeyPress}
-            placeholder="Share your thoughts about the dream, ask questions, or explore feelings..."
+            placeholder="Ask about symbols, emotions, or meanings in your dream..."
             className="flex-1 px-4 py-3 bg-slate-700/50 border border-blue-600/30 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-blue-100 placeholder-blue-400"
             disabled={isLoading}
           />
